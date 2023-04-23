@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/agilex/control_io_ws/install/rmf_iot_msg/include/**",
+                "/home/agilex/control_io_ws/install/rmf_task_msgs/include/**",
+                "/opt/ros/foxy/include/**",
+                "/usr/include/c++/**",
+                "/home/agilex/control_io_ws/install/rmf_iot/include/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
