@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/agilex/ff_ros2_ws/src/auto_xarm/include/**",
+                "/opt/ros/galactic/include/**",
+                "/home/agilex/rmf_ws/install/rmf_dispenser_msgs/include/**",
+                "/home/agilex/rmf_ws/install/rmf_ingestor_msgs/include/**",
+                "/home/agilex/xarm_ros2_ws/install/xarm_api/include/**",
+                "/home/agilex/xarm_ros2_ws/install/xarm_msgs/include/**",
+                "/usr/include/c++/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
