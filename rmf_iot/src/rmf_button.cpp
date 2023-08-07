@@ -49,7 +49,7 @@ using namespace std;
     request_id = "8e2525d77630";
 
   //init port name
-  port_name_ = "/dev/ttyUSB0";
+  port_name_ = "/dev/ttybutton";
   connect(port_name_,B9600);
 
 }

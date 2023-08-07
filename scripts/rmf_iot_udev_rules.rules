@@ -1,0 +1,2 @@
+KERNEL=="ttyUSB*", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", MODE:="0777",SYMLINK+="ttybutton"
+
