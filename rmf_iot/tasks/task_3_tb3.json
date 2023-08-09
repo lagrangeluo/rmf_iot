@@ -1,0 +1,5 @@
+[
+{"task_type":"Loop","start_time":0,"priority":0,"description":{"num_loops":1,"start_name":"parking_1","finish_name":"sale_1"}},
+{"task_type":"Loop","start_time":0,"priority":0,"description":{"num_loops":1,"start_name":"top","finish_name":"A"}},
+{"task_type":"Loop","start_time":0,"priority":0,"description":{"num_loops":1,"start_name":"right","finish_name":"top_3"}}
+]

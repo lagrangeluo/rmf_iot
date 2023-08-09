@@ -44,9 +44,22 @@ using namespace std;
     current_dis_request.request_guid = "delivery.dispatch-0";
     current_dis_request.target_guid = "pickup";
 
-    json_msg = "{\"type\": \"dispatch_task_request\", \"request\": {\"priority\": {\"type\": \"binary\", \"value\": 0}, \"labels\": [\"rmf_demos.simple_api_server\"], \"description\": {\"pickup\": {\"place\": \"right\", \"handler\": \"pickup\", \"payload\": []}, \"dropoff\": {\"place\": \"left\", \"handler\": \"dropoff\", \"payload\": []}}, \"category\": \"delivery\", \"unix_millis_earliest_start_time\": 0}}";
-    request_id_const = "demos_9180aa2d-66bc-4d61-8856-";
-    request_id = "8e2525d77630";
+    request_id_const = "agx_rmf_task-";
+    request_id = 1;
+  //init json msgs
+  std::ifstream json_file;
+  //open json file and create json object
+  json_file.open("install/rmf_iot/share/rmf_iot/tasks/task_3_tb3.json");
+  if(json_file)
+    RCLCPP_INFO(this->get_logger(),"open json file success!");
+  else
+    RCLCPP_ERROR(this->get_logger(),"failed to open json file");
+
+  json_data = json::parse(json_file);
+  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data.dump(3).c_str());
+
+  json_file.close();
+  RCLCPP_INFO(this->get_logger(),"json parse complete,close the file");
 
   //init port name
   port_name_ = "/dev/ttybutton";
@@ -54,6 +67,40 @@ using namespace std;
 
 }
 
+void rmf_button::submit_task_request(void){
+  for (const auto& json_data_meta : json_data)
+  {
+    json json_msg;
+    convert_task_to_request_msg(json_data_meta,json_msg);
+    current_task_request.json_msg = json_msg.dump();
+
+    // to add whitespace after echo character "," and ":"
+    // for(std::string::iterator it = current_task_request.json_msg.begin();
+    //   it != current_task_request.json_msg.end(); ++it)
+    //  {
+    //   cout<<"circle once"<<endl;
+    //     if(*it == ',')
+    //     {
+    //       it = current_task_request.json_msg.insert(it+1,' ');
+    //     }
+    //     if(*it == ':')
+    //     {          
+    //       it = current_task_request.json_msg.insert(it+1,' ');
+    //     }
+    //  }
+
+
+    current_task_request.request_id = request_id_const + std::to_string(request_id);
+    request_id++;
+
+    RCLCPP_INFO(this->get_logger(),"the button is pressed,send a task request!request id: %s",
+      current_task_request.request_id.c_str());
+    RCLCPP_DEBUG(this->get_logger(),"task request: %s",current_task_request.json_msg.c_str());
+    tast_request_pub->publish(current_task_request);
+    json_msg.clear();
+
+  }
+}
 void rmf_button::connect(std::string dev_name, uint32_t bouadrate) {
     RCLCPP_INFO(this->get_logger(),"connet the serial port:'%s'",dev_name.c_str());
     port_ = std::shared_ptr<SerialPort>(new SerialPort(dev_name, bouadrate));
@@ -91,11 +138,7 @@ void rmf_button::connect(std::string dev_name, uint32_t bouadrate) {
     if(DI_Status.pin_1 == true && button_press_flag == false) //the button is pressed
     {
       button_press_flag = true;
-      current_task_request.json_msg = json_msg;
-      current_task_request.request_id = request_id_const + request_id;
-      //request_id = (std::string)(request_id + 1);
-
-      tast_request_pub->publish(current_task_request);
+      submit_task_request();
     }
     else if(DI_Status.pin_1 == false)
     {
@@ -202,13 +245,31 @@ void rmf_button::connect(std::string dev_name, uint32_t bouadrate) {
     port_->writeData(write_date,data_length);
   }
 
+  void rmf_button::convert_task_to_request_msg(const json& json_in,json& json_out)
+  {
+
+
+     json_out["type"] = "dispatch_task_request";
+   // if(json_in["task_type"] == "Loop")
+    //{
+      json_out["request"]["description"]["places"] = {json_in["description"]["start_name"], json_in["description"]["finish_name"]};
+      json_out["request"]["description"]["rounds"] = int(json_in["description"]["num_loops"]);
+      json_out["request"]["category"] = "patrol";
+    //}
+    json_out["request"]["labels"] = {"rmf_demos.simple_api_server"};
+    json_out["request"]["priority"] = {{"type", "binary"},{"value", 0}};
+
+    json_out["request"]["unix_millis_earliest_start_time"] = 0;
+    //json_out.push_back({"type", "dispatch_task_request"});
+
+  }
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   std::shared_ptr<rmf_button> node = std::make_shared<rmf_button>("rmf_button");
 
-  cout << "init complete!"<< endl;
+  RCLCPP_INFO(node->get_logger(),"init complete!");
   rclcpp::spin(node);
   return 0;
 }

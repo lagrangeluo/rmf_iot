@@ -6,7 +6,12 @@
 #include <vector>
 #include <chrono>
 #include <thread>
-//#include <rmf_iot/include/rmf_iot/msg/Io_Status.hpp>
+#include <iostream>
+#include <fstream>
+
+//lib include
+#include <nlohmann/json.hpp>
+
 //ros2 include
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/qos.hpp>
@@ -23,6 +28,7 @@
 #include "rmf_iot/serial_port.h"
 
 using namespace std;
+using namespace nlohmann;
 
 namespace AgileX {
 
@@ -37,7 +43,7 @@ public:
     using ApiTaskRequest_msgs = rmf_task_msgs::msg::ApiRequest;
 
     rmf_button(string node_name);
-
+    void submit_task_request(void);
 private:
     //uart
     std::shared_ptr<SerialPort> port_;
@@ -80,13 +86,16 @@ private:
     rclcpp::Publisher<Ingestor_Request_msgs>::SharedPtr ingestor_request_pub;
     rclcpp::Publisher<ApiTaskRequest_msgs>::SharedPtr tast_request_pub;
 
-    std::string json_msg;
+    std::string json_msg_const;
     std::string request_id_const;
-    std::string request_id;
+    int request_id;
     Dispenser_Requst_msgs current_dis_request;
     Ingestor_Request_msgs current_ing_request;
     ApiTaskRequest_msgs current_task_request;
 
+    //json msgs
+    json json_data;
+    void convert_task_to_request_msg(const json& json_in,json& json_out);
 };
 }//namespace AgileX
 #endif
