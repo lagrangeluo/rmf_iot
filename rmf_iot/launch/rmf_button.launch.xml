@@ -1,0 +1,16 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="blue_button_task" default ="$(find-pkg-share rmf_iot)/tasks/task_10_tb3.json"/>
+  <arg name="yellow_button_task" default="$(find-pkg-share rmf_iot)/tasks/task_10_tb3_reverse.json"/>
+  <arg name="green_button_task" default="$(find-pkg-share rmf_iot)/tasks/task_10_tb3.json"/>
+  <arg name="red_button_task" default="$(find-pkg-share rmf_iot)/tasks/task_10_tb3.json"/>
+
+  <!-- fleet server launch -->
+  <node pkg="rmf_iot" exec="rmf_button" name="rmf_button" output="both">
+    <param name="blue_button_task" value="$(var blue_button_task)"/>
+    <param name="yellow_button_task" value="$(var yellow_button_task)"/>
+    <param name="green_button_task" value="$(var green_button_task)"/>
+    <param name="red_button_task" value="$(var red_button_task)"/>
+  </node>
+</launch>

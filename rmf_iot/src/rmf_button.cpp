@@ -7,6 +7,13 @@ using namespace std;
 
   rmf_button::rmf_button(string node_name):Node(node_name)
 {
+  //init ros parameter
+
+  blue_button_task = this->declare_parameter<std::string>("blue_button_task");
+  yellow_button_task = this->declare_parameter<std::string>("yellow_button_task");
+  green_button_task = this->declare_parameter<std::string>("green_button_task");
+  red_button_task = this->declare_parameter<std::string>("red_button_task");
+  
   //init uart buffer
   uart_buffer.reserve(8);
 
@@ -46,20 +53,38 @@ using namespace std;
 
     request_id_const = "agx_rmf_task-";
     request_id = 1;
+
   //init json msgs
-  std::ifstream json_file;
+  std::ifstream json_file_blue;
+  std::ifstream json_file_yellow;
+  std::ifstream json_file_green;
+  std::ifstream json_file_red;
+
   //open json file and create json object
-  json_file.open("install/rmf_iot/share/rmf_iot/tasks/task_3_tb3.json");
-  if(json_file)
-    RCLCPP_INFO(this->get_logger(),"open json file success!");
+  json_file_blue.open(blue_button_task);
+  json_file_yellow.open(yellow_button_task);
+  json_file_green.open(green_button_task);
+  json_file_red.open(red_button_task);
+
+  if(json_file_blue && json_file_yellow && json_file_green && json_file_red)
+    RCLCPP_INFO(this->get_logger(),"open all json files: %s",blue_button_task.c_str());
   else
-    RCLCPP_ERROR(this->get_logger(),"failed to open json file");
+    RCLCPP_ERROR(this->get_logger(),"failed to open one or more json files");
+  json_data_blue = json::parse(json_file_blue);
+  json_data_yellow = json::parse(json_file_yellow);
+  json_data_green = json::parse(json_file_green);
+  json_data_red = json::parse(json_file_red);
+  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data_blue.dump(3).c_str());
+  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data_yellow.dump(3).c_str());
+  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data_green.dump(3).c_str());
+  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data_red.dump(3).c_str());
 
-  json_data = json::parse(json_file);
-  RCLCPP_DEBUG(this->get_logger(),"json file detail: %s",json_data.dump(3).c_str());
+  json_file_blue.close();
+  json_file_yellow.close();
+  json_file_green.close();
+  json_file_red.close();
 
-  json_file.close();
-  RCLCPP_INFO(this->get_logger(),"json parse complete,close the file");
+  RCLCPP_INFO(this->get_logger(),"json parse complete,close all the files");
 
   //init port name
   port_name_ = "/dev/ttybutton";
@@ -67,7 +92,7 @@ using namespace std;
 
 }
 
-void rmf_button::submit_task_request(void){
+void rmf_button::submit_task_request(json& json_data){
   for (const auto& json_data_meta : json_data)
   {
     json json_msg;
@@ -89,15 +114,14 @@ void rmf_button::submit_task_request(void){
     //     }
     //  }
 
-
     current_task_request.request_id = request_id_const + std::to_string(request_id);
     request_id++;
 
-    RCLCPP_INFO(this->get_logger(),"the button is pressed,send a task request!request id: %s",
-      current_task_request.request_id.c_str());
-    RCLCPP_DEBUG(this->get_logger(),"task request: %s",current_task_request.json_msg.c_str());
+    RCLCPP_INFO(this->get_logger(),"request id: %s",current_task_request.request_id.c_str());
+      RCLCPP_DEBUG(this->get_logger(),"task request: %s",current_task_request.json_msg.c_str());
     tast_request_pub->publish(current_task_request);
     json_msg.clear();
+    usleep(200000);
 
   }
 }
@@ -135,14 +159,37 @@ void rmf_button::connect(std::string dev_name, uint32_t bouadrate) {
 
     iostatus_pub->publish(io_status);
 
-    if(DI_Status.pin_1 == true && button_press_flag == false) //the button is pressed
-    {
-      button_press_flag = true;
-      submit_task_request();
-    }
-    else if(DI_Status.pin_1 == false)
+    if(DI_Status.pin_1 == false && DI_Status.pin_2 == false 
+              && DI_Status.pin_3 == false && DI_Status.pin_4 == false)
     {
       button_press_flag = false;
+    }
+    else
+    {
+      if(DI_Status.pin_1 == true && button_press_flag == false) //the button is pressed
+      {
+        button_press_flag = true;
+        RCLCPP_INFO(this->get_logger(),"Button 1 (blue) is pressed! total send %d tasks",int(json_data_blue.size()));
+        submit_task_request(json_data_blue);
+      }
+      if(DI_Status.pin_2 == true && button_press_flag == false) //the button is pressed
+      {
+        button_press_flag = true;
+        RCLCPP_INFO(this->get_logger(),"Button 2 (yellow) is pressed! total send %d tasks",int(json_data_yellow.size()));
+        submit_task_request(json_data_yellow);
+      }
+      if(DI_Status.pin_3 == true && button_press_flag == false) //the button is pressed
+      {
+        button_press_flag = true;
+        RCLCPP_INFO(this->get_logger(),"Button 3 (green) is pressed! total send %d tasks",int(json_data_green.size()));
+        submit_task_request(json_data_green);
+      }
+      if(DI_Status.pin_4 == true && button_press_flag == false) //the button is pressed
+      {
+        button_press_flag = true;
+        RCLCPP_INFO(this->get_logger(),"Button 4 (red) is pressed! total send %d tasks",int(json_data_red.size()));
+        submit_task_request(json_data_red);
+      }
     }
   }
   void rmf_button::readData()

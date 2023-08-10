@@ -8,6 +8,7 @@
 #include <thread>
 #include <iostream>
 #include <fstream>
+#include <unistd.h> 
 
 //lib include
 #include <nlohmann/json.hpp>
@@ -43,7 +44,7 @@ public:
     using ApiTaskRequest_msgs = rmf_task_msgs::msg::ApiRequest;
 
     rmf_button(string node_name);
-    void submit_task_request(void);
+    void submit_task_request(json& json_data);
 private:
     //uart
     std::shared_ptr<SerialPort> port_;
@@ -78,6 +79,11 @@ private:
     rclcpp::Publisher<rmf_iot_msg::msg::IoStatus>::SharedPtr iostatus_pub;
     rmf_iot_msg::msg::IoStatus io_status;
     rclcpp::TimerBase::SharedPtr timer_;
+
+    std::string blue_button_task;
+    std::string yellow_button_task;
+    std::string green_button_task;
+    std::string red_button_task;
     
     //rmf
     // rclcpp::Subscription<Dispenser_Requst_msgs>::SharedPtr dispenser_request_sub;
@@ -86,7 +92,6 @@ private:
     rclcpp::Publisher<Ingestor_Request_msgs>::SharedPtr ingestor_request_pub;
     rclcpp::Publisher<ApiTaskRequest_msgs>::SharedPtr tast_request_pub;
 
-    std::string json_msg_const;
     std::string request_id_const;
     int request_id;
     Dispenser_Requst_msgs current_dis_request;
@@ -94,7 +99,11 @@ private:
     ApiTaskRequest_msgs current_task_request;
 
     //json msgs
-    json json_data;
+    json json_data_blue;
+    json json_data_yellow;
+    json json_data_green;
+    json json_data_red;
+
     void convert_task_to_request_msg(const json& json_in,json& json_out);
 };
 }//namespace AgileX
